@@ -1,0 +1,13 @@
+{
+  "type": "service_account",
+  "project_id": "cringedownloader",
+  "private_key_id": "0f4be7a2fc09e6fe3b84516f4d571cc412783c02",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQCldwKJjAI3OWLJ\n+0u8gJIlectdTIe2pVXJrktZIYX2sRd0MoPeH5vuS1XVyjXfBo9LIozIjYMETKer\nh1SzeUMxC8YordaWqva6Wq3AnDIQnIUCA6NC/lKzhwYA7akko1pUWfLMgwQzWdhE\nJjPER2vuO2dOaZjnWJMFeKJMjeAlX+ydYv1eBEh5nmKIZIxhFqGTiJzUlD0t8Sy1\nFS/Ny+AnxMbz4cQM9m8pf9kYrjmfI/nSZVV0s2vgvmxN+nVPzLI16OTyMMIet+sV\nShs0iYpz3bDjfLDEtaFG81mRLXuGwA5eU61t+ERZgzgtzzQLaNh94ffDuRzPKX0f\n44hH2GbLAgMBAAECggEASOb9lDK+yywajZmNzfjr610VL/9HED8aZCjKA/RUPNPb\n3JNhLF3K6xwALpjQUXpnahhH5RkMb7mCan3O4OB9rT9dyJCHKo0a9hJ72ZA4Mr9z\njuahaSP6tiS4jXIpAv6CDwYuhtL259UfBy+5wTIiqK09n/vApbWN2WxEPeyIpI4/\nYbOP0BVyOQCrTwwHIrohPt4hPzMEBK5r0AS953zj93Kr6uLNIRpM9PPfPE/+J3fk\nAF+aH/yCJpQ1A4/atN8rIcTSos0lA0pFnpkBFbSJeGVAQvh6XQTnlU+B4hUJaE19\n3Sm1GssOx0O9apoO6VB+bm08xqDx82tPLAGaf1LxiQKBgQDn0RD6eC/2CJsUpFu+\nulSelgQAP2jx/bf4YLfW+RbBwgW8f7gcd3w8fGhnvZVmIafOYVmmFtHfNQUu09IP\nP1Np5DYDujfgWWdVwGip2oD9OcJGcNlSDHUysfoeKyDUeHnRmrPL3GNr7r4+hJ/I\n8wqDS1kF0hbc9/7lbdVdOgoS/wKBgQC2ufEqZecGsmq4l9s/zP5jVcGJUsDJcu0E\nJh2ezDmIyLfo1GdKHxjr/ugdkENedR/K8aE/JaYF9on2YmYMkQdrQoMUpMQxsS2S\ntVyS5weTKuwlepEGEPFaQDBpOsaycf9vADebqpBWI9+3olz75+eIh/W6B0lbEGte\npnFxZVWINQKBgBhM7DC1ZKGv6UHSsONfePte0nCMNR4Y8K4SxXK9jcsl4aAO62fg\nhp94kyE82GpqYMLbpaApiDqTvkVYYw7CHqZdC+R8Ittbw99TWiVkCF2DLoBf2Agn\n0ilMSuHat4hOUMbOJsbaBXoM/thi4rUX9SQqQ9y+VzM2s/us9c7eBKxVAoGBAIjV\nY5DBcKjmMN788PWtGA7hKCYirzXr9yu1M1c4ThltXbNgY9zwvqPzZnTFFH4GrYE3\nQu3bzqEGhzfXZd4hOPIMg8aQwE8KBDupzqI/mb+OU/qY90MYqvRPvzD+D8+PaJ4C\nBqJurtmi0aRdVM5bUlo+njfpvvgPqqfdcnRdUxjFAoGBAJHGbHEq+298646GEVPa\nbflCml1V+DmtnpcKpGvpL4QMV9tHU9q9JXcjdKKsbvkAnne88ju2mlyUizlV7Rp/\nSzHXYYCvTTK7iz496Qi9PwjONjVDe89G7o8zmbNgPmvsB2JdpwFCYgC20RtDD+JY\noIhaNiC3QZJVZXqyDMPsgILZ\n-----END PRIVATE KEY-----\n",
+  "client_email": "firebase-adminsdk-sj4nu@cringedownloader.iam.gserviceaccount.com",
+  "client_id": "101983590884100029799",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/firebase-adminsdk-sj4nu%40cringedownloader.iam.gserviceaccount.com",
+  "universe_domain": "googleapis.com"
+}

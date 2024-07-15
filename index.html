@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cringe Downloader</title>
+    <!-- Importing Materialize CSS -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css" rel="stylesheet">
+    <!-- Importing Google Icon Font -->
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+	<link rel="icon" href="icon.png" type="image/png" sizes="16x16">
+
+    <style>
+        body {
+            display: flex;
+            min-height: 100vh;
+            flex-direction: column;
+        }
+        main {
+            flex: 1 0 auto;
+        }
+        .container {
+            margin-top: 50px;
+        }
+        .card-panel {
+            border-radius: 10px;
+        }
+        .brand-logo {
+            left: 0 !important;
+            right: 0 !important;
+            transform: unset !important;
+            text-align: center !important;
+        }
+        .footer {
+            text-align: center;
+        }
+        #loading {
+            display: none;
+        }
+        #loading.visible {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .preloader-wrapper.small {
+            width: 20px;
+            height: 20px;
+        }
+        #btnSubmit {
+            transition: all 0.2s ease-in-out;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-left: auto;
+            margin-right: auto;
+            margin-top: 40px;
+        }
+        .supported {
+            text-align: right;
+        }
+        .input-field {
+            display: flex;
+            align-items: center;
+            gap: 22px;
+        }
+
+        .input-field .btn{
+            width: 125px;
+        }
+
+        .error {
+            color: red;
+            text-align: center;
+        }
+
+        #youtubeForm {
+            margin-top: 2px;
+        }
+    </style>
+
+	<script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+    <script type="text/javascript">     
+        $(document).ready(() => {
+            $("#youtubeForm").submit(function(e) {
+                $('.error').text('')
+                $('#btnSubmit').addClass('disabled')
+                $('#loading').addClass('visible');
+                $('#loaded').hide();
+
+                e.preventDefault();
+                const form = $(this);
+                const actionUrl = form.attr('action');
+                const url = form.find('#url').val();
+                
+                $.ajax({
+                    type: "POST",
+                    url: "https://us-central1-cringedownloader.cloudfunctions.net/download",
+                    contentType: "application/json",
+                    data: JSON.stringify({ url }),
+                    success: function(data) {
+                        const blob = new Blob([data], { type: 'video/mp4' });
+                        const link = document.createElement('a');
+
+                        link.href = window.URL.createObjectURL(blob);
+                        link.download = `video_${new Date().getTime()}.mp4`;
+                        link.click();
+                    },
+                    xhrFields: {
+                        responseType: 'blob'
+                    },
+                    error: function(jqXHR, textStatus, errorThrown) {
+                        console.error('Error:', textStatus, errorThrown);
+                        $('.error').text(errorThrown);
+                    },
+                    complete: () => {
+                        $('#btnSubmit').removeClass('disabled')
+                        $('#loading').removeClass('visible');
+                        $('#loaded').show();
+
+                    }
+                });
+            });
+
+            $("#btnPaste").click( async(e) => {
+                if (navigator.clipboard) {
+                    // Leggi il testo dagli appunti
+                    const text = await navigator.clipboard.readText();
+                    // Incolla il testo nella textbox
+                    document.getElementById('url').value = text;
+                    M.updateTextFields();
+                    M.toast({html: 'Pasted'})
+
+                }
+            })
+        });
+    </script>
+</head>
+<body>
+    <header>
+        <nav>
+            <div class="nav-wrapper teal">
+                <a href="#" class="brand-logo">Cringe Downloader</a>
+            </div>
+        </nav>
+    </header>
+    <main>
+        <div class="container">
+            <div class="row">
+                <div class="col s12 m8 offset-m2">
+                    <div class="card-panel teal lighten-5">
+                        <h5 class="center-align">Submit your URL</h5>
+						<form id="youtubeForm">
+                            <div class="input-field">
+                                <i class="material-icons prefix">link</i>
+                                <input id="url" type="text" class="validate" required>
+                                <a class="waves-effect waves-light btn" id="btnPaste"><i class="material-icons left">content_paste</i>Paste</a>
+                                <label for="url">Enter URL</label>
+                            </div>
+                            <p class="supported"><i>*Supported platform: Youtube, Instagram, Tiktok, Instagram, Facebook</i></p>
+
+                            <div class="center-align">
+                                <button class="btn waves-effect waves-light teal" type="submit" name="action" id="btnSubmit">
+                                    <span id="loaded">
+                                        Send
+                                        <i class="material-icons right">send</i>
+                                    </span>
+
+                                    <span id="loading">
+                                        Loading &nbsp;
+                                        <div class="preloader-wrapper small active">
+                                            <div class="spinner-layer spinner-green-only">
+                                              <div class="circle-clipper left">
+                                                <div class="circle"></div>
+                                              </div><div class="gap-patch">
+                                                <div class="circle"></div>
+                                              </div><div class="circle-clipper right">
+                                                <div class="circle"></div>
+                                              </div>
+                                            </div>
+                                          </div>
+                                    </span>
+                                </button>
+                            </div>
+                            <p class="error"></p>
+
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+    <footer>
+        <nav>
+            <div class="nav-wrapper teal footer">
+                Cringe Downloader by Meesta
+            </div>
+        </nav>
+    </footer>
+    <!-- Importing Materialize JavaScript -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+</body>
+</html>
