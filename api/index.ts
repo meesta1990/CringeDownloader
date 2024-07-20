@@ -6,17 +6,14 @@ const tmp = require('tmp');
 const path = require('path');
 const fs = require('fs');
 const axios = require('axios');
-const ffmpeg = require('fluent-ffmpeg');
-const ffmpegPath = require('ffmpeg-static');
 const { alldl } = require('rahad-all-downloader');
+const youtubedl = require('youtube-dl-exec')
 
 const app = express();
 const PORT = 5000;
 
 app.use(cors());
 app.use(bodyParser.json());
-
-ffmpeg.setFfmpegPath(ffmpegPath);
 
 const isYoutubeUrl = (url) => {
   const regex = /^(https?:\/\/)?(www\.)?(youtube\.com|youtu\.?be)\/.+$/;
@@ -54,74 +51,38 @@ app.post('/api/download', async (req, res) => {
 
   if (isYoutubeUrl(url)) {
     try {
-      // Create temporary files for video and audio
-      const videoTmp = tmp.fileSync();
-      const audioTmp = tmp.fileSync();
-      const outputTmp = tmp.fileSync({ postfix: '.mp4' });
+      youtubedl(url, {
+        dumpSingleJson: true,
+        noCheckCertificates: true,
+        noWarnings: true,
+        preferFreeFormats: true,
+        addHeader: ['referer:youtube.com', 'user-agent:googlebot']
+      }).then(async (output) => {
+        const videoTmp = tmp.fileSync({ postfix: '.mp4' });
+        const response = await axios({
+          url: output.url,
+          method: 'GET',
+          responseType: 'stream',
+        });
 
-      // Get video info
-      const info = await ytdl.getInfo(url);
-      const title = info.videoDetails.title.replace(/[^a-zA-Z0-9]/g, '_'); // Sanitize title
-
-      // Download video and audio streams
-      const videoStream = ytdl(url, { filter: 'videoonly' }).pipe(fs.createWriteStream(videoTmp.name));
-
-      videoStream.on('finish', () => {
-        console.log('Video download finished');
-        const audioStream = ytdl(url, { filter: 'audioonly' }).pipe(fs.createWriteStream(audioTmp.name));
-
-        audioStream.on('finish', () => {
-          console.log('Audio download finished');
-
-          // Combine video and audio using ffmpeg
-          ffmpeg()
-            .input(videoTmp.name)
-            .input(audioTmp.name)
-            .outputOptions('-c:v copy')
-            .outputOptions('-c:a aac')
-            .save(outputTmp.name)
-            .on('end', () => {
-              console.log('Combining video and audio finished');
-
-              // Send the file for download
-              res.download(outputTmp.name, `${title}.mp4`, (err) => {
-                if (err) {
-                  console.error('Error sending file:', err);
-                  res.status(500).json({ error: 'Error sending file' });
-                } else {
-                  console.log('Download sent successfully');
-                  // Clean up temporary files
-                  videoTmp.removeCallback();
-                  audioTmp.removeCallback();
-                  outputTmp.removeCallback();
-                }
-              });
-            })
-            .on('error', (err) => {
-              console.error('Error combining video and audio:', err);
-              res.status(500).json({ error: 'Error combining video and audio' });
-              // Clean up temporary files in case of error
-              videoTmp.removeCallback();
-              audioTmp.removeCallback();
-              outputTmp.removeCallback();
+        response.data.pipe(fs.createWriteStream(videoTmp.name))
+          .on('finish', () => {
+            console.log('Video downloaded successfully');
+            res.download(videoTmp.name, `youtube_video.mp4`, (err) => {
+              if (err) {
+                console.error('Error sending file:', err);
+                res.status(500).json({ error: 'Error sending file' });
+              } else {
+                videoTmp.removeCallback();
+              }
             });
-        });
-
-        audioStream.on('error', (err) => {
-          console.error('Error downloading audio:', err);
-          res.status(500).json({ error: 'Error downloading audio' });
-          // Clean up temporary files in case of error
-          videoTmp.removeCallback();
-          audioTmp.removeCallback();
-        });
-      });
-
-      videoStream.on('error', (err) => {
-        console.error('Error downloading video:', err);
-        res.status(500).json({ error: 'Error downloading video' });
-        // Clean up temporary files in case of error
-        videoTmp.removeCallback();
-      });
+          })
+          .on('error', (err) => {
+            console.error('Error downloading video:', err);
+            res.status(500).json({ error: 'Error downloading video' });
+            videoTmp.removeCallback();
+          });
+      })
     } catch (error) {
       console.error('Error downloading video:', error);
       res.status(500).json({ error: 'Error downloading video' });
