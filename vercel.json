@@ -2,14 +2,18 @@
     "version": 2,
     "builds": [
       {
-        "src": "Dockerfile",
-        "use": "@vercel/docker"
+        "src": "api/index.ts",
+        "use": "@vercel/node"
+      },
+      {
+        "src": "public/**/*",
+        "use": "@vercel/static"
       }
     ],
     "routes": [
       {
         "src": "/api/(.*)",
-        "dest": "/"
+        "dest": "/api/index.ts"
       },
       {
         "src": "/(.*)",
