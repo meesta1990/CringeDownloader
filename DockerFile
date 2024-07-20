@@ -14,5 +14,13 @@ RUN npm install
 # Bundle app source
 COPY . .
 
+# Ensure the build directory exists
+RUN mkdir -p /usr/src/app/public
+
+# Build the frontend if necessary (assuming you have a build step)
+# RUN npm run build --prefix public
+
 EXPOSE 5000
+
+# Start the server
 CMD [ "node", "index.js" ]
