@@ -1,18 +1,17 @@
 'use strict';
-const Writable = require("stream");
 const express = require('express');
 const ytdl = require('@distube/ytdl-core');
 const cors = require('cors');
 const bodyParser = require('body-parser');
-const app = express();
-const PORT = 5000;
-const { alldl } = require('rahad-all-downloader');
+const tmp = require('tmp');
 const path = require('path');
 const fs = require('fs');
 const axios = require('axios');
 const ffmpeg = require('fluent-ffmpeg');
 const ffmpegPath = require('ffmpeg-static');
-const tt = require('twitter-dl');
+
+const app = express();
+const PORT = 5000;
 
 app.use(cors());
 app.use(bodyParser.json());
@@ -25,15 +24,8 @@ const isYoutubeUrl = (url) => {
 };
 
 const isTwitterUrl = (url) => {
-  const regex = /[(?:https?:\/\/(?:twitter|x)\.com)](\/(?:#!\/)?(\w+)\/status(es)?\/(\d+))/
+  const regex = /[(?:https?:\/\/(?:twitter|x)\.com)](\/(?:#!\/)?(\w+)\/status(es)?\/(\d+))/;
   return regex.test(url);
-}
-
-const twitterApi = async (url) => {
-  const res = await axios.post("https://ssyoutube-api.sansekai.repl.co/api/twitter", {
-    url: url,
-  });
-  return res.data;
 };
 
 const isRedditUrl = (url) => {
@@ -60,87 +52,90 @@ app.post('/api/download', async (req, res) => {
     return res.status(400).json({ error: 'URL is required' });
   }
 
-  if(isYoutubeUrl(url)) {
+  if (isYoutubeUrl(url)) {
     try {
+      // Create temporary files for video and audio
+      const videoTmp = tmp.fileSync();
+      const audioTmp = tmp.fileSync();
+      const outputTmp = tmp.fileSync({ postfix: '.mp4' });
+
       // Get video info
       const info = await ytdl.getInfo(url);
       const title = info.videoDetails.title.replace(/[^a-zA-Z0-9]/g, '_'); // Sanitize title
-      const videoPath = path.resolve(__dirname, `${title}_video.mp4`);
-      const audioPath = path.resolve(__dirname, `${title}_audio.mp4`);
-      const outputPath = path.resolve(__dirname, `${title}.mp4`);
-  
+
       // Download video and audio streams
-      const videoStream = ytdl(url, { filter: 'videoonly' }).pipe(fs.createWriteStream(videoPath));
-  
+      const videoStream = ytdl(url, { filter: 'videoonly' }).pipe(fs.createWriteStream(videoTmp.name));
+
       videoStream.on('finish', () => {
         console.log('Video download finished');
-        const audioStream = ytdl(url, { filter: 'audioonly' }).pipe(fs.createWriteStream(audioPath));
-  
+        const audioStream = ytdl(url, { filter: 'audioonly' }).pipe(fs.createWriteStream(audioTmp.name));
+
         audioStream.on('finish', () => {
           console.log('Audio download finished');
-  
+
           // Combine video and audio using ffmpeg
           ffmpeg()
-            .input(videoPath)
-            .input(audioPath)
+            .input(videoTmp.name)
+            .input(audioTmp.name)
             .outputOptions('-c:v copy')
             .outputOptions('-c:a aac')
-            .save(outputPath)
+            .save(outputTmp.name)
             .on('end', () => {
               console.log('Combining video and audio finished');
-  
+
               // Send the file for download
-              res.download(outputPath, `${title}.mp4`, (err) => {
+              res.download(outputTmp.name, `${title}.mp4`, (err) => {
                 if (err) {
                   console.error('Error sending file:', err);
                   res.status(500).json({ error: 'Error sending file' });
                 } else {
                   console.log('Download sent successfully');
-                  // Optionally, you can delete the output file after sending it
-                  fs.unlink(outputPath, (err) => {
-                    if (err) console.error('Error deleting output file:', err);
-                  });
                   // Clean up temporary files
-                  fs.unlink(videoPath, (err) => {
-                    if (err) console.error('Error deleting video file:', err);
-                  });
-                  fs.unlink(audioPath, (err) => {
-                    if (err) console.error('Error deleting audio file:', err);
-                  });
+                  videoTmp.removeCallback();
+                  audioTmp.removeCallback();
+                  outputTmp.removeCallback();
                 }
               });
             })
             .on('error', (err) => {
               console.error('Error combining video and audio:', err);
               res.status(500).json({ error: 'Error combining video and audio' });
+              // Clean up temporary files in case of error
+              videoTmp.removeCallback();
+              audioTmp.removeCallback();
+              outputTmp.removeCallback();
             });
         });
-  
+
         audioStream.on('error', (err) => {
           console.error('Error downloading audio:', err);
           res.status(500).json({ error: 'Error downloading audio' });
+          // Clean up temporary files in case of error
+          videoTmp.removeCallback();
+          audioTmp.removeCallback();
         });
       });
-  
+
       videoStream.on('error', (err) => {
         console.error('Error downloading video:', err);
         res.status(500).json({ error: 'Error downloading video' });
+        // Clean up temporary files in case of error
+        videoTmp.removeCallback();
       });
     } catch (error) {
       console.error('Error downloading video:', error);
       res.status(500).json({ error: 'Error downloading video' });
     }
-  } else if(isTwitterUrl(url)) {
+  } else if (isTwitterUrl(url)) {
     res.status(500).json({ error: 'Not supported yet' });
-  } else if(isRedditUrl(url)){
+  } else if (isRedditUrl(url)) {
     try {
       const videoUrl = await getRedditVideoUrl(url);
       if (!videoUrl) {
         return res.status(404).json({ error: 'Video URL not found' });
       }
 
-      const videoTitle = 'reddit_video';
-      const videoPath = path.resolve(__dirname, `${videoTitle}.mp4`);
+      const videoTmp = tmp.fileSync({ postfix: '.mp4' });
 
       const response = await axios({
         url: videoUrl,
@@ -148,23 +143,22 @@ app.post('/api/download', async (req, res) => {
         responseType: 'stream',
       });
 
-      response.data.pipe(fs.createWriteStream(videoPath))
+      response.data.pipe(fs.createWriteStream(videoTmp.name))
         .on('finish', () => {
           console.log('Video downloaded successfully');
-          res.download(videoPath, `${videoTitle}.mp4`, (err) => {
+          res.download(videoTmp.name, `reddit_video.mp4`, (err) => {
             if (err) {
               console.error('Error sending file:', err);
               res.status(500).json({ error: 'Error sending file' });
             } else {
-              fs.unlink(videoPath, (err) => {
-                if (err) console.error('Error deleting file:', err);
-              });
+              videoTmp.removeCallback();
             }
           });
         })
         .on('error', (err) => {
           console.error('Error downloading video:', err);
           res.status(500).json({ error: 'Error downloading video' });
+          videoTmp.removeCallback();
         });
 
     } catch (error) {
@@ -172,43 +166,39 @@ app.post('/api/download', async (req, res) => {
       res.status(500).json({ error: 'Error downloading video' });
     }
   } else {
-      try {
-        const result = await alldl(url);
-        const videoUrl = result.data.videoUrl;
-        const videoTitle = result.data.title.replace(/[^a-zA-Z0-9]/g, '_'); // Sanitize title
-        const videoPath = path.resolve(__dirname, `${videoTitle}.mp4`);
+    try {
+      const result = await alldl(url);
+      const videoUrl = result.data.videoUrl;
+      const videoTmp = tmp.fileSync({ postfix: '.mp4' });
 
-        // Download the video
-        const response = await axios({
-          url: videoUrl,
-          method: 'GET',
-          responseType: 'stream'
+      const response = await axios({
+        url: videoUrl,
+        method: 'GET',
+        responseType: 'stream'
+      });
+
+      response.data.pipe(fs.createWriteStream(videoTmp.name))
+        .on('finish', () => {
+          console.log('Video downloaded successfully');
+          res.download(videoTmp.name, `video.mp4`, (err) => {
+            if (err) {
+              console.error('Error sending file:', err);
+              res.status(500).json({ error: 'Error sending file' });
+            } else {
+              videoTmp.removeCallback();
+            }
+          });
+        })
+        .on('error', (err) => {
+          console.error('Error downloading video:', err);
+          res.status(500).json({ error: 'Error downloading video' });
+          videoTmp.removeCallback();
         });
 
-        response.data.pipe(fs.createWriteStream(videoPath))
-          .on('finish', () => {
-            console.log('Video downloaded successfully');
-            res.download(videoPath, `${videoTitle}.mp4`, (err) => {
-              if (err) {
-                console.error('Error sending file:', err);
-                res.status(500).json({ error: 'Error sending file' });
-              } else {
-                // Optionally, you can delete the output file after sending it
-                fs.unlink(videoPath, (err) => {
-                  if (err) console.error('Error deleting file:', err);
-                });
-              }
-            });
-          })
-          .on('error', (err) => {
-            console.error('Error downloading video:', err);
-            res.status(500).json({ error: 'Error downloading video' });
-          });
-
-      } catch (error) {
-        console.error('Error:', error.message);
-        res.status(500).json({ error: 'Error downloading video' });
-      }
+    } catch (error) {
+      console.error('Error:', error.message);
+      res.status(500).json({ error: 'Error downloading video' });
+    }
   }
 });
 

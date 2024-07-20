@@ -21,6 +21,7 @@
     "fs": "^0.0.1-security",
     "path": "^0.12.7",
     "rahad-all-downloader": "^2.1.10",
+    "tmp": "^0.2.3",
     "twitter-dl": "^1.0.6"
   }
 }
