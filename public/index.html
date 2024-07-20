@@ -123,7 +123,7 @@
                 const form = $(this);
                 const actionUrl = form.attr('action');
                 const url = form.find('#url').val();
-                const service = "/api/download"
+                const service = "http://localhost:5000/api/download"
                 
                 $.ajax({
                     type: "POST",

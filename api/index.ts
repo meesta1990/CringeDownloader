@@ -1,4 +1,3 @@
-'use strict';
 const express = require('express');
 const ytdl = require('@distube/ytdl-core');
 const cors = require('cors');
@@ -9,6 +8,7 @@ const fs = require('fs');
 const axios = require('axios');
 const ffmpeg = require('fluent-ffmpeg');
 const ffmpegPath = require('ffmpeg-static');
+const { alldl } = require('rahad-all-downloader');
 
 const app = express();
 const PORT = 5000;
