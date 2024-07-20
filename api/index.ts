@@ -54,7 +54,7 @@ const getRedditVideoUrl = async (url) => {
   }
 };
 
-app.post('/download', async (req, res) => {
+app.post('/api/download', async (req, res) => {
   let { url } = req.body;
   if (!url) {
     return res.status(400).json({ error: 'URL is required' });
