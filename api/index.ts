@@ -16,6 +16,10 @@ const tt = require('twitter-dl');
 const app = express();
 const PORT = 5000;
 
+const privateKey = fs.readFileSync('/home/opc/certs/server.key', 'utf8');
+const certificate = fs.readFileSync('/home/opc/certs/server.cert', 'utf8');
+const credentials = { key: privateKey, cert: certificate };
+
 app.use(cors());
 app.use(bodyParser.json());
 
@@ -239,6 +243,13 @@ app.post('/api/download', async (req, res) => {
   }
 });
 
+
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`Server is running on port ${PORT}`);
+});
+
+// Crea un server HTTPS
+const httpsServer = https.createServer(credentials, app);
+httpsServer.listen(5001, '0.0.0.0', () => {
+  console.log('HTTPS Server running on port 5001');
 });
