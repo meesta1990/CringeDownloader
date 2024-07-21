@@ -5,12 +5,11 @@ const tmp = require('tmp');
 const path = require('path');
 const fs = require('fs');
 const axios = require('axios');
-const youtubedl = require('youtube-dl-exec')
+const youtubedl = require('youtube-dl-exec');
 const https = require('https');
 const getFBInfo  = require('@xaviabot/fb-downloader');
 
-
-const Tiktok = require("@tobyg74/tiktok-api-dl")
+const Tiktok = require('@tobyg74/tiktok-api-dl');
 const instagramGetUrl = require('instagram-url-direct');
 const tt = require('twitter-dl');
 
@@ -26,7 +25,7 @@ const isYoutubeUrl = (url) => {
 };
 
 const isTwitterUrl = (url) => {
-  const regex = /[(?:https?:\/\/(?:twitter|x)\.com)](\/(?:#!\/)?(\w+)\/status(es)?\/(\d+))/;
+  const regex = /https?:\/\/(www\.)?twitter\.com\/[A-Za-z0-9_]+\/status\/\d+/;
   return regex.test(url);
 };
 
@@ -123,7 +122,7 @@ app.post('/api/download', async (req, res) => {
           url: output.url,
           method: 'GET',
           responseType: 'stream',
-        })
+        });
         response.data.pipe(fs.createWriteStream(videoTmp.name))
         .on('finish', () => {
           console.log('Video downloaded successfully');
@@ -141,8 +140,8 @@ app.post('/api/download', async (req, res) => {
           res.status(500).json({ error: 'Error downloading video' });
           // Clean up temporary files in case of error
           videoTmp.removeCallback();
-        })
-      })
+        });
+      });
     } catch (error) {
       console.error('Error downloading video:', error);
       res.status(500).json({ error: 'Error downloading video' });
@@ -184,19 +183,21 @@ app.post('/api/download', async (req, res) => {
       console.error('Error:', error.message);
       res.status(500).json({ error: 'Error downloading video' });
     }
-  } else{
+  } else {
     try {
       let videoUrl;
 
       if (isTikTokUrl(url)) {
-        const longUrl = await getLongUrl(url)
-        const result = await Tiktok.Downloader(longUrl, { version: "v1" })
-        videoUrl = result.result.video.downloadAddr
+        const longUrl = await getLongUrl(url);
+        const result = await Tiktok.Downloader(longUrl, { version: 'v1' });
+        videoUrl = result.result.video.downloadAddr;
       } else if (isFacebookUrl(url)) {
         videoUrl = await getFBInfo(url)
         .then((result) => result.hd || result.sd)
         .catch((error) => {
-
+          console.error('Error fetching Facebook video URL:', error);
+          res.status(500).json({ error: 'Error fetching Facebook video URL' });
+          return;
         });        
       } else if (isInstagramUrl(url)) {
         videoUrl = await instagramGetUrl(url).then(result => result.url_list[0]);
@@ -238,6 +239,6 @@ app.post('/api/download', async (req, res) => {
   }
 });
 
-app.listen(PORT, () => {
+app.listen(PORT, '0.0.0.0', () => {
   console.log(`Server is running on port ${PORT}`);
 });
