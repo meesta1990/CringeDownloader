@@ -25,6 +25,7 @@
     "path": "^0.12.7",
     "tmp": "^0.2.3",
     "twitter-dl": "^1.0.6",
-    "twitter-url-direct": "^1.0.9"
+    "twitter-url-direct": "^1.0.9",
+    "youtube-dl-exec": "^3.0.7"
   }
 }
