@@ -7,8 +7,7 @@ const fs = require('fs');
 const axios = require('axios');
 const youtubedl = require('youtube-dl-exec');
 const https = require('https');
-const getFBInfo  = require('@xaviabot/fb-downloader');
-
+const getFBInfo = require('@xaviabot/fb-downloader');
 const Tiktok = require('@tobyg74/tiktok-api-dl');
 const instagramGetUrl = require('instagram-url-direct');
 const tt = require('twitter-dl');
@@ -239,5 +238,8 @@ app.post('/api/download', async (req, res) => {
 });
 
 app.get('/check', async (req, res) => {
-  res.send('Hello World!')
-})
+  res.send('Hello World!');
+});
+
+// Esporta l'app per essere gestita da Vercel
+module.exports = app;
