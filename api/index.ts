@@ -242,6 +242,6 @@ app.post('/api/download', async (req, res) => {
   }
 });
 
-app.post('/check', async (req, res) => {
+app.get('/check', async (req, res) => {
   res.send('Hello World!')
 })
