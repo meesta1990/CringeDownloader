@@ -27,6 +27,7 @@
     "tmp": "^0.2.3",
     "twitter-dl": "^1.0.6",
     "twitter-url-direct": "^1.0.9",
-    "youtube-dl-exec": "^3.0.7"
+    "youtube-dl-exec": "^3.0.7",
+    "ytdl-core": "^4.11.5"
   }
 }

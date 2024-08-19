@@ -5,9 +5,9 @@ const tmp = require('tmp');
 const path = require('path');
 const fs = require('fs');
 const axios = require('axios');
-const youtubedl = require('youtube-dl-exec');
 const https = require('https');
 const getFBInfo  = require('@xaviabot/fb-downloader');
+const ytdl = require('ytdl-core');
 
 const Tiktok = require('@tobyg74/tiktok-api-dl');
 const instagramGetUrl = require('instagram-url-direct');
@@ -109,7 +109,7 @@ app.post('/api/download', async (req, res) => {
 
   if (isYoutubeUrl(url)) {
     try {
-      youtubedl(url, {
+      ytdl(url, {
         dumpSingleJson: true,
         noCheckCertificates: true,
         noWarnings: true,
