@@ -15,10 +15,6 @@ const tt = require('twitter-dl');
 
 const app = express();
 
-const privateKey = fs.readFileSync('/home/opc/certs/server.key', 'utf8');
-const certificate = fs.readFileSync('/home/opc/certs/server.cert', 'utf8');
-const credentials = { key: privateKey, cert: certificate };
-
 app.use(cors());
 app.use(bodyParser.json());
 
